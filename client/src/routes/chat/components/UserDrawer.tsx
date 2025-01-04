@@ -55,14 +55,16 @@ const UserDrawer = () => {
         justifyContent: "space-between",
         visibility: !drawerOpen ? "hidden" : "visible",
         zIndex: 100,
+        transition: "all 0.3s",
+        transform: `translateX(${drawerOpen ? "0" : "-100%"})`,
       }}
     >
       <Paper
-        shadow={isMobile ? "xs" : "sm"}
+        shadow={isMobile ? "xl" : "sm"}
         style={{
           margin: "6px",
           height: "100%",
-          overflow: "auto", 
+          overflow: "auto",
         }}
         withBorder
       >

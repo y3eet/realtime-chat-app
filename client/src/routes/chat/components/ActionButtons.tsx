@@ -10,8 +10,8 @@ import {
 
 const iconSize = "30px";
 const ActionButtons = () => {
+  const { isMobile } = useTheme();
   const { setDrawerOpen, toggleColorScheme, colorScheme } = useTheme();
-
   return (
     <div
       style={{
@@ -22,24 +22,26 @@ const ActionButtons = () => {
       }}
     >
       <div>
-        <ActionIcon
-          style={{
-            width: iconSize,
-            height: iconSize,
-          }}
-          variant="subtle"
-          color={theme.primaryColor}
-          onClick={() => {
-            setDrawerOpen(true);
-          }}
-        >
-          <IconMenu2
+        {isMobile && (
+          <ActionIcon
             style={{
               width: iconSize,
               height: iconSize,
             }}
-          />
-        </ActionIcon>
+            variant="subtle"
+            color={theme.primaryColor}
+            onClick={() => {
+              setDrawerOpen(true);
+            }}
+          >
+            <IconMenu2
+              style={{
+                width: iconSize,
+                height: iconSize,
+              }}
+            />
+          </ActionIcon>
+        )}
       </div>
       <div
         style={{

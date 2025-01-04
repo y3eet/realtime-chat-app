@@ -32,6 +32,7 @@ const MessageInput = ({ sendMessage }: MessageInputProps) => {
     >
       <TextInput
         size="lg"
+        required
         placeholder="Type your message..."
         withErrorStyles={false}
         rightSectionPointerEvents="none"

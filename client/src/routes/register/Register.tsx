@@ -10,12 +10,15 @@ import {
 
 import { IconUser, IconLock, IconMail } from "@tabler/icons-react";
 import { useState, useTransition } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { SERVER_URL } from "../../../url";
+import { useAuth } from "../../components/AuthContext";
 
 const Register = () => {
   const [isPending, startTransition] = useTransition();
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string> | null>(null);
+  const { login } = useAuth();
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -35,8 +38,8 @@ const Register = () => {
       }).then(async (response) => {
         if (response.ok) {
           setErrors(null);
+          login().then(() => navigate("/login"));
         } else {
-          // Handle error
           const data = await response.json();
           setErrors(data.error);
         }
@@ -139,10 +142,6 @@ const Register = () => {
             Already have an account?{" "}
             <Link to="/login" style={{ color: "#667eea" }}>
               Log In
-            </Link>
-            <br />
-            <Link to="/" style={{ color: "#667eea" }}>
-              /
             </Link>
           </Text>
         </Card>

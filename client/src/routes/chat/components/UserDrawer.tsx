@@ -1,7 +1,6 @@
 import {
   Avatar,
   Box,
-  Button,
   Card,
   Divider,
   Indicator,
@@ -12,13 +11,13 @@ import { useClickOutside } from "@mantine/hooks";
 import { useAuth } from "../../../components/AuthContext";
 import { useTheme } from "../../../components/ThemeContext";
 import { theme } from "../../../theme";
-import { socket } from "../../../socket";
 import { useEffect, useState } from "react";
 import { ConnectedUser } from "../../../lib/types";
 import MenuButton from "./MenuButton";
-import { useNavigate } from "react-router";
+import { useSocket } from "../../../components/SocketContext";
 
 const UserDrawer = () => {
+  const { listen } = useSocket();
   const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const [offlineUsers, setOfflineUsers] = useState<ConnectedUser[]>([]);
   const { isMobile, drawerOpen, setDrawerOpen } = useTheme();
@@ -27,7 +26,7 @@ const UserDrawer = () => {
   );
 
   useEffect(() => {
-    socket.on("connected-users", (data) => {
+    const cleanup = listen("connected-users", (data: ConnectedUser[]) => {
       const onlineUsers = data.filter(
         (user: ConnectedUser) => user.status === "online"
       );
@@ -36,11 +35,8 @@ const UserDrawer = () => {
       );
       setConnectedUsers(onlineUsers);
       setOfflineUsers(offlineUsers);
+      return cleanup;
     });
-
-    return () => {
-      socket.off("connected-users");
-    };
   }, []);
 
   return (
@@ -109,14 +105,7 @@ export default UserDrawer;
 
 const CurrentUserProfile = () => {
   const { user, userStatus } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (user) {
-      socket.connect().active;
-    } else {
-      navigate("/login");
-    }
-  }, []);
+
   return (
     <Card
       style={{
@@ -164,22 +153,7 @@ const CurrentUserProfile = () => {
           <Text size="xs">{userStatus}</Text>
         </div>
       </div>
-
-      {userStatus === "Offline" ? (
-        <Button
-          onClick={() => {
-            socket.connect();
-          }}
-          color={theme.primaryColor}
-          style={{ marginLeft: "auto" }}
-          size="xs"
-          variant="outline"
-        >
-          Reconnect
-        </Button>
-      ) : (
-        <MenuButton />
-      )}
+      <MenuButton />
     </Card>
   );
 };

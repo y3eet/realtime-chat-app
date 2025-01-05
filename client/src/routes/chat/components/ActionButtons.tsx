@@ -57,7 +57,7 @@ const ActionButtons = () => {
             height: iconSize,
           }}
           variant="subtle"
-          color="white"
+          color={colorScheme === "dark" ? "white" : "black"}
           onClick={() => {
             window.open("https://github.com/y3eet", "_blank");
           }}

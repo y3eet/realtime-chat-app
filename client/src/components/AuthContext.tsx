@@ -8,7 +8,7 @@ import {
 import { useNavigate } from "react-router";
 import { UserPayload } from "../lib/types";
 import { SERVER_URL } from "../../url";
-import { socket } from "../socket";
+import { useSocket } from "./SocketContext";
 
 interface AuthContextType {
   user: UserPayload | null;
@@ -23,6 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const { connect, disconnect, isConnected } = useSocket();
   const [user, setUser] = useState<UserPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userStatus, setUserStatus] = useState<string>("Offline");
@@ -50,44 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   useEffect(() => {
-    fetchUser();
+    fetchUser().then(connect).catch(console.error);
   }, []);
 
   useEffect(() => {
-    console.log("User status:", userStatus);
-  }, [userStatus]);
-
-  // useEffect(() => {
-  //   // Attach socket event listeners
-  //   const handleConnect = () => {
-  //     console.log("Connected with socket ID:", socket.id);
-  //     setIsConnected(true);
-  //     console.log("Socket connection status:", socket.connected);
-  //   };
-
-  //   const handleDisconnect = () => {
-  //     console.log("Disconnected from server");
-  //     setIsConnected(false);
-  //   };
-
-  //   const handleConnectError = (err: any) => {
-  //     console.error("Connection error:", err);
-  //   };
-
-  //   socket.on("connect", handleConnect);
-  //   socket.on("disconnect", handleDisconnect);
-  //   socket.on("connect_error", handleConnectError);
-
-  //   // Cleanup listeners on unmount
-  //   return () => {
-  //     socket.off("connect", handleConnect);
-  //     socket.off("disconnect", handleDisconnect);
-  //     socket.off("connect_error", handleConnectError);
-  //   };
-  // }, []);
+    setUserStatus(isConnected ? "Online" : "Offline");
+  }, [isConnected]);
 
   const login = async () => {
-    fetchUser();
+    fetchUser().then(connect).catch(console.error);
   };
 
   // Function to sign out
@@ -95,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetch(`${SERVER_URL}/api/auth/logout`, {
       credentials: "include",
     }).then(() => {
-      socket.disconnect();
+      disconnect();
       setUser(null);
       navigate("/login");
     });

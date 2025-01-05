@@ -1,19 +1,18 @@
 import { Box, Card, Divider, Paper } from "@mantine/core";
 import { useTheme } from "../../components/ThemeContext";
 import { useEffect, useRef, useState } from "react";
-import { socket } from "../../socket";
 import UserDrawer from "./components/UserDrawer";
 import MessageInput from "./components/MessageInput";
 import MessageBox from "./components/MessageBox";
 import { Message } from "../../lib/types";
 import { dateFormatter } from "../../lib/tools";
 import { SERVER_URL } from "../../../url";
-import { useAuth } from "../../components/AuthContext";
 import ActionButtons from "./components/ActionButtons";
+import { useSocket } from "../../components/SocketContext";
 
 const ChatRoom = () => {
+  const { listen, socket } = useSocket();
   const { isMobile } = useTheme();
-  const { setUserStatus } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -39,29 +38,10 @@ const ChatRoom = () => {
   }, []);
 
   useEffect(() => {
-    try {
-      socket.connect().active;
-      socket.on("connect", () => {
-        setUserStatus("Online");
-        console.log("Connected to server", socket.id);
-      });
-      socket.on("new-message", (data) => {
-        setMessages((prev) => [...prev, data]);
-      });
-      socket.on("disconnect", (reason) => {
-        setUserStatus("Offline");
-        console.log("Disconnected from server", { reason });
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    return () => {
-      if (socket) {
-        socket.disconnect();
-        socket.off("new-message");
-        socket.off("disconnect");
-      }
-    };
+    const cleanup = listen("new-message", (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+    return cleanup;
   }, []);
 
   return (
@@ -114,7 +94,7 @@ const ChatRoom = () => {
 
           <MessageInput
             sendMessage={(e) => {
-              socket.emit("send-message", { text: e });
+              socket?.emit("send-message", { text: e });
             }}
           />
         </Paper>

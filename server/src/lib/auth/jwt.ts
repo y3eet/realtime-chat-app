@@ -8,7 +8,7 @@ export async function signToken(
   createRefreshToken: boolean = false
 ) {
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: "10s",
+    expiresIn: "1hr",
   });
   const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, {
     expiresIn: "7d",
